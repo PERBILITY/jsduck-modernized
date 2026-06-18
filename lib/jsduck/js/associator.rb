@@ -152,72 +152,38 @@ module JsDuck
       end
 
 
-      # Returns array of child nodes of given node
+      # Returns array of child nodes of given node, sorted by their
+      # position in source.
+      #
+      # Rather than relying on a hardcoded per-type list of properties,
+      # we generically collect every nested AST node -- i.e. every Hash
+      # carrying a "range" -- from the node's values.
+      # This keeps comment association working for any syntax acorn can
+      # emit (arrow functions, template literals, classes, ...) without
+      # having to enumerate every ESTree node type. Sorting by start
+      # offset guarantees we pick the nearest node following a comment.
       def child_nodes(node)
-        properties = NODE_TYPES[node["type"]]
-
-        unless properties
-          Logger.fatal("Unknown node type: "+node["type"])
-          exit(1)
+        nodes = []
+        node.each_pair do |key, value|
+          # Skip non-structural keys, especially the comment plumbing
+          # ("comments" array on Program, "next" links between comments)
+          # which also carry ranges but must never be treated as code.
+          next if key == "type" || key == "range" || key == "comments" || key == "next"
+          if value.is_a?(Array)
+            value.each {|v| nodes << v if ast_node?(v) }
+          elsif ast_node?(value)
+            nodes << value
+          end
         end
-
-        # First flatten, then get rid of all nils, because the inner
-        # arrays may also contain nils.
-        properties.map {|p| node[p] }.flatten.compact
+        nodes.sort_by {|n| n["range"][0] }
       end
 
-      # All possible node types in Esprima-created abstract syntax tree
-      #
-      # Each node type maps to list of properties of that node into
-      # which we can recurse for further parsing.
-      NODE_TYPES = {
-        "Program" => ["body"],
-
-        "BlockStatement" => ["body"],
-        "BreakStatement" => [],
-        "ContinueStatement" => [],
-        "DoWhileStatement" => ["body", "test"],
-        "DebuggerStatement" => [],
-        "EmptyStatement" => [],
-        "ExpressionStatement" => ["expression"],
-        "ForStatement" => ["init", "test", "update", "body"],
-        "ForInStatement" => ["left", "right", "body"],
-        "IfStatement" => ["test", "consequent", "alternate"],
-        "LabeledStatement" => ["body"],
-        "ReturnStatement" => ["argument"],
-        "SwitchStatement" => ["discriminant", "cases"],
-        "SwitchCase" => ["test", "consequent"],
-        "ThrowStatement" => ["argument"],
-        "TryStatement" => ["block", "handlers", "finalizer"],
-        "CatchClause" => ["param", "body"],
-        "WhileStatement" => ["test", "body"],
-        "WithStatement" => ["object", "body"],
-
-        "FunctionDeclaration" => ["id", "params", "body"],
-        "VariableDeclaration" => ["declarations"],
-        "VariableDeclarator" => ["id", "init"],
-
-        "AssignmentExpression" => ["left", "right"],
-        "ArrayExpression" => ["elements"],
-        "BinaryExpression" => ["left", "right"],
-        "CallExpression" => ["callee", "arguments"],
-        "ConditionalExpression" => ["test", "consequent", "alternate"],
-        "FunctionExpression" => ["body"],
-
-        "LogicalExpression" => ["left", "right"],
-        "MemberExpression" => ["object", "property"],
-        "NewExpression" => ["callee", "arguments"],
-        "ObjectExpression" => ["properties"],
-        "Property" => ["key", "value"],
-
-        "SequenceExpression" => ["expressions"],
-        "ThisExpression" => [],
-        "UnaryExpression" => ["argument"],
-        "UpdateExpression" => ["argument"],
-
-        "Identifier" => [],
-        "Literal" => [],
-      }
+      # True when the value is an AST node: a Hash carrying a range that
+      # is not itself a comment node.
+      def ast_node?(value)
+        value.is_a?(Hash) && value["range"] &&
+          value["type"] != "Block" && value["type"] != "Line"
+      end
     end
 
   end

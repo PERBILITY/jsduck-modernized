@@ -1,0 +1,9 @@
+{
+  "name": "jsduck-acorn-bridge",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Modern ESTree parser front-end for JSDuck (acorn-based). PoC.",
+  "dependencies": {
+    "acorn": "^8.11.3"
+  }
+}

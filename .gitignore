@@ -4,3 +4,8 @@ template/resources/css
 template/resources/sass/.sass-cache
 template-min/
 sdk-vars.rb
+
+# acorn parser front-end
+/node_modules/
+# generated PoC documentation output
+/poc/out-*/
