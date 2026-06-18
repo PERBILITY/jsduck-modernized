@@ -9,3 +9,5 @@ sdk-vars.rb
 /node_modules/
 # generated PoC documentation output
 /poc/out-*/
+
+.idea
