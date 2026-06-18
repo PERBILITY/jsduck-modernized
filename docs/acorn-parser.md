@@ -43,7 +43,7 @@ ESTree natively. Nothing downstream of the seam changes.
 |------|------|---------|
 | `lib/jsduck/js/acorn_bridge.js` | **new** | Node.js script: reads JS from stdin, parses with acorn, prints `{program, comments}` as ESTree JSON. |
 | `lib/jsduck/js/acorn_adapter.rb` | **new** | Runs the bridge, normalizes acorn's output into JSDuck's Esprima-format AST. |
-| `lib/jsduck/js/parser.rb` | modified | Front-end dispatch: `JSDUCK_PARSER=acorn` selects acorn, otherwise RKelly (the default). |
+| `lib/jsduck/js/parser.rb` | modified | Always uses the acorn front-end; the original RKelly parse path is removed. |
 | `lib/jsduck/js/associator.rb` | modified | `child_nodes` made generic + position-sorted, so comment association works for any syntax acorn emits — without enumerating every ESTree node type. |
 | `package.json` | **new** | Declares the acorn dependency for the bridge. |
 
@@ -80,17 +80,17 @@ treating those as code breaks class detection.
 
 - **Node.js** on `PATH` (or set `JSDUCK_NODE=/path/to/node`).
 - **acorn** resolvable by the bridge script. Either run `npm install` so
-  `node_modules/` sits next to the gem/checkout, or point `NODE_PATH` at a
-  directory containing acorn.
+  `node_modules/` sits next to the bridge, or point `JSDUCK_NODE_PATH` at a
+  directory containing acorn. `JSDUCK_NODE_PATH` is prepended to `NODE_PATH`
+  **only for the bridge's Node process**, so it never interferes with other
+  Node tooling (e.g. Babel) running in the same build.
 
 ## Usage
 
 ```bash
 npm install                 # installs acorn (see package.json)
-JSDUCK_PARSER=acorn jsduck path/to/src -o out
+jsduck path/to/src -o out   # acorn is the only parser; no flag needed
 ```
-
-Without `JSDUCK_PARSER=acorn`, JSDuck behaves exactly as upstream (RKelly).
 
 ## Build-pipeline impact
 

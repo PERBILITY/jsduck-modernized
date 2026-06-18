@@ -9,7 +9,7 @@ while keeping all of JSDuck's ExtJS analysis untouched.
 |------|--------|
 | `lib/jsduck/js/acorn_bridge.js` | **new** — Node.js script: parses stdin with acorn, emits `{program, comments}` JSON (ESTree). |
 | `lib/jsduck/js/acorn_adapter.rb` | **new** — runs the bridge, normalizes acorn output into JSDuck's Esprima-format AST (`range = [start, end, line]`, strips `start`/`end`/`loc`). |
-| `lib/jsduck/js/parser.rb` | dispatch: `JSDUCK_PARSER=acorn` uses acorn, otherwise RKelly (default). |
+| `lib/jsduck/js/parser.rb` | always uses the acorn front-end (RKelly parse path removed). |
 | `lib/jsduck/js/associator.rb` | `child_nodes` made generic + sorted by source position, so modern node types no longer hit `Logger.fatal`. |
 
 Everything downstream (`Js::Class`, `Js::Method`, `Js::Property`, `Js::Event`,
@@ -33,12 +33,8 @@ in-tree `bin/jsduck` directly does **not** activate the gem's Ruby
 dependencies (e.g. `sass`), so prefer the installed executable.
 
 ```bash
-# 1) Baseline: RKelly on the ES5 file (the modern file would CRASH RKelly)
-jsduck poc/ExtClassic.js -o poc/out-rkelly --warnings=-all
-
-# 2) acorn front-end on BOTH files (incl. the modern one, no Babel needed)
-JSDUCK_PARSER=acorn jsduck \
-    poc/ExtClassic.js poc/ExtModern.js -o poc/out-acorn --warnings=-all
+# acorn parses both files directly, incl. the modern one, with no Babel step
+jsduck poc/ExtClassic.js poc/ExtModern.js -o poc/out-acorn --warnings=-all
 ```
 
 ## What to verify in `poc/out-acorn`
@@ -53,8 +49,8 @@ Open `poc/out-acorn/index.html` and check **`Poc.ModernWidget`**:
 - [ ] **"View source" shows the ORIGINAL modern code** (const/let, arrow,
       template literals, async/await) — not transpiled output
 
-Compare `Poc.ClassicWidget` between `out-rkelly` and `out-acorn` — they should
-be equivalent (proves the acorn front-end is a faithful drop-in).
+`Poc.ClassicWidget` (plain ES5) and `Poc.ModernWidget` (modern JS) should
+yield equivalent docs — proving acorn handles both faithfully.
 
 ## Note on the production pipeline
 

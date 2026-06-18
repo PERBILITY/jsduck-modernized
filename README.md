@@ -18,10 +18,11 @@
 > `statics`, events, custom tags, …). Only the parser front-end is swapped;
 > everything downstream operates on the same Esprima-compatible AST as before.
 >
-> **Usage:** set the environment variable `JSDUCK_PARSER=acorn`. See
+> **Usage:** acorn is the parser — no flag needed. JSDuck just requires
+> Node.js + the `acorn` module to be available (run `npm install`). See
 > [docs/acorn-parser.md](docs/acorn-parser.md) for design, runtime
-> requirements (Node.js + acorn) and limitations. A runnable demonstration
-> lives in [poc/](poc/).
+> requirements and limitations. A runnable demonstration lives in
+> [poc/](poc/).
 >
 > [upstream]: https://github.com/senchalabs/jsduck
 > [acorn]: https://github.com/acornjs/acorn
