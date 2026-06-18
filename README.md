@@ -1,7 +1,32 @@
 ![JSDuck](https://raw.github.com/senchalabs/jsduck/master/opt/jsduck-logo-dark.png)
 ===================================================================================
 
-**Warning: JSDuck is no more maintained!**
+> ## Fork: modern parser front-end (acorn)
+>
+> This is a fork of [senchalabs/jsduck][upstream] that replaces JSDuck's
+> ES5.1-only JavaScript parser with a modern, maintained [acorn][] front-end.
+>
+> **Why:** JSDuck's built-in parser (RKelly) cannot read modern JavaScript
+> (`const`/`let`, arrow functions, template literals, `async`/`await`,
+> shorthand methods, spread, …). The common workaround is to transpile the
+> code with Babel before feeding it to JSDuck — but then the *source shown in
+> the generated docs is the transpiled output*, not your real code.
+>
+> This fork lets JSDuck parse modern JavaScript **directly, without Babel**,
+> while keeping **all** of JSDuck's Ext JS analysis unchanged (`Ext.define`,
+> `cfg` with auto-generated getters/setters, `apply`/`update`, mixins,
+> `statics`, events, custom tags, …). Only the parser front-end is swapped;
+> everything downstream operates on the same Esprima-compatible AST as before.
+>
+> **Usage:** set the environment variable `JSDUCK_PARSER=acorn`. See
+> [docs/acorn-parser.md](docs/acorn-parser.md) for design, runtime
+> requirements (Node.js + acorn) and limitations. A runnable demonstration
+> lives in [poc/](poc/).
+>
+> [upstream]: https://github.com/senchalabs/jsduck
+> [acorn]: https://github.com/acornjs/acorn
+
+**Warning: upstream JSDuck is no more maintained!**
 - If you're looking to adopt a documentation tool, try something else.
 - If you're using JSDuck, consider moving over to something else.
 - Even Sencha itself doesn't use it any more, they use some internal tool, that's not available publicly.
