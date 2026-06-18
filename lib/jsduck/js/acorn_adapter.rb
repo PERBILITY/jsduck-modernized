@@ -28,7 +28,9 @@ module JsDuck
       # Parses the given source and returns the Program node (Esprima
       # format) with an attached "comments" array.
       def adapt(input)
-        data = JSON.parse(run_bridge(input))
+        # max_nesting: false -- acorn ASTs can nest far deeper than
+        # Ruby's default JSON nesting limit of 100.
+        data = JSON.parse(run_bridge(input), :max_nesting => false)
         ast = normalize(data["program"])
         ast["comments"] = data["comments"] || []
         ast
@@ -37,11 +39,25 @@ module JsDuck
       private
 
       def run_bridge(input)
-        out, err, status = Open3.capture3(NODE_BIN, BRIDGE, :stdin_data => input)
+        out, err, status = Open3.capture3(node_env, NODE_BIN, BRIDGE, :stdin_data => input)
         unless status.success?
           raise "Invalid JavaScript syntax: #{err.strip}"
         end
         out
+      end
+
+      # Environment for the Node child process. JSDUCK_NODE_PATH lets the
+      # bridge locate acorn (prepended to NODE_PATH) WITHOUT polluting the
+      # global environment of other tools (e.g. Babel) in the same build.
+      def node_env
+        env = {}
+        extra = ENV["JSDUCK_NODE_PATH"]
+        if extra && !extra.empty?
+          existing = ENV["NODE_PATH"]
+          env["NODE_PATH"] = existing && !existing.empty? ?
+            extra + File::PATH_SEPARATOR + existing : extra
+        end
+        env
       end
 
       # Recursively rewrites acorn nodes in place:
@@ -57,6 +73,7 @@ module JsDuck
             line = (loc && loc["start"]) ? loc["start"]["line"] : nil
             node.keys.each {|k| node[k] = normalize(node[k]) }
             node["range"] = [s, e, line]
+            normalize_params(node) if node["params"].is_a?(Array)
           else
             node.keys.each {|k| node[k] = normalize(node[k]) }
           end
@@ -65,6 +82,25 @@ module JsDuck
           node.map {|v| normalize(v) }
         else
           node
+        end
+      end
+
+      # Unwraps modern function parameter syntax to the plain identifier
+      # JSDuck's param model expects -- mirroring what Babel used to do in
+      # the build pipeline, but at the AST level:
+      #   foo(a = 1)   AssignmentPattern -> Identifier "a"
+      #   foo(...rest) RestElement       -> Identifier "rest"
+      # Destructuring patterns are left as-is (they have no single name).
+      def normalize_params(node)
+        node["params"] = node["params"].map {|p| unwrap_param(p) }
+      end
+
+      def unwrap_param(p)
+        return p unless p.is_a?(Hash)
+        case p["type"]
+        when "AssignmentPattern" then p["left"] || p
+        when "RestElement"       then p["argument"] || p
+        else p
         end
       end
 
