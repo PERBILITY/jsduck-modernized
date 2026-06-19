@@ -22,12 +22,13 @@ Gem::Specification.new do |s|
 
   s.executables = ["jsduck"]
 
-  s.add_dependency 'rdiscount', '~> 2.1.6'
-  s.add_dependency 'json', '~> 1.8.0'
-  s.add_dependency 'parallel', '~> 0.7.1'
-  s.add_dependency 'rkelly-remix', '~> 0.0.7'
-  s.add_dependency 'dimensions', '~> 1.2.0'
-  s.add_dependency 'sass', '~> 3.4.14'
+  # Modernized dependency set (runs on Ruby 3.2+). rkelly-remix was dropped:
+  # the acorn-based front-end replaced the RKelly parser.
+  s.add_dependency 'rdiscount', '~> 2.2'
+  s.add_dependency 'json', '>= 2.0'
+  s.add_dependency 'parallel', '>= 1.0'
+  s.add_dependency 'dimensions', '~> 1.3'
+  s.add_dependency 'sass', '~> 3.7'
 
   s.add_development_dependency 'rspec'
   s.add_development_dependency 'rake'
