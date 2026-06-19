@@ -1,6 +1,37 @@
 ![JSDuck](https://raw.github.com/senchalabs/jsduck/master/opt/jsduck-logo-dark.png)
 ===================================================================================
 
+> ## Fork: modern parser front-end (acorn)
+>
+> This is a fork of [senchalabs/jsduck][upstream] that replaces JSDuck's
+> ES5.1-only JavaScript parser with a modern, maintained [acorn][] front-end.
+>
+> **Why:** JSDuck's built-in parser (RKelly) cannot read modern JavaScript
+> (`const`/`let`, arrow functions, template literals, `async`/`await`,
+> shorthand methods, spread, …). The common workaround is to transpile the
+> code with Babel before feeding it to JSDuck — but then the *source shown in
+> the generated docs is the transpiled output*, not your real code.
+>
+> This fork lets JSDuck parse modern JavaScript **directly, without Babel**,
+> while keeping **all** of JSDuck's Ext JS analysis unchanged (`Ext.define`,
+> `cfg` with auto-generated getters/setters, `apply`/`update`, mixins,
+> `statics`, events, custom tags, …). Only the parser front-end is swapped;
+> everything downstream operates on the same Esprima-compatible AST as before.
+>
+> **Usage:** acorn is the parser — no flag needed. JSDuck just requires
+> Node.js + the `acorn` module to be available (run `npm install`). See
+> [docs/acorn-parser.md](docs/acorn-parser.md) for design, runtime
+> requirements and limitations.
+>
+> [upstream]: https://github.com/senchalabs/jsduck
+> [acorn]: https://github.com/acornjs/acorn
+
+**Warning: upstream JSDuck is no more maintained!**
+- If you're looking to adopt a documentation tool, try something else.
+- If you're using JSDuck, consider moving over to something else.
+- Even Sencha itself doesn't use it any more, they use some internal tool, that's not available publicly.
+- If you'd like to take over the maintenance of JSDuck, contact me by creating an issue.
+
 [![Build Status](https://travis-ci.org/senchalabs/jsduck.png)](https://travis-ci.org/senchalabs/jsduck)
 
 API documentation generator for Sencha JavaScript frameworks.
@@ -94,11 +125,11 @@ Who's using JSDuck?
 
 - Appcelerator [Titanium SDK](http://docs.appcelerator.com/titanium/2.0/index.html)
 - AT&T [API Platform SDK for HTML5](https://code-api-att.com/SenchaSdk20Drop23Docs/)
-- Bryntum [Siesta unit testing framework](http://www.bryntum.com/products/siesta/docs/)
+- Bryntum [Siesta unit testing framework](http://www.bryntum.com/docs/siesta/)
 - [CKEditor](http://docs.ckeditor.com)
 - [GeoExt 2](https://github.com/geoext/geoext2)
 - Rally Software [Rally App SDK](https://prod.help.rallydev.com/apps/2.0rc1/doc/)
-- Wikimedia Foundation [Mediawiki](https://doc.wikimedia.org/mediawiki-core/master/js/)
+- Wikimedia Foundation [MediaWiki](https://doc.wikimedia.org/mediawiki-core/master/js/)
   and [VisualEditor](https://doc.wikimedia.org/VisualEditor/master/)
 - [Sencha](http://docs.sencha.com) - obviously :)
 
@@ -148,7 +179,7 @@ input.
 Changelog
 ---------
 
-See [the Releases page](https://github.com/senchalabs/jsduck/Releases).
+See [the Releases page](https://github.com/senchalabs/jsduck/releases).
 
 
 More questions?
