@@ -17,6 +17,10 @@
 # For running when gem not installed
 $:.unshift File.dirname(File.dirname(__FILE__)) + "/lib"
 
+# Restore APIs removed in modern Ruby (Fixnum, File.exists?, ...) before
+# anything else is loaded.
+require 'jsduck/ruby_compat'
+
 require 'jsduck/app'
 require 'jsduck/options'
 
